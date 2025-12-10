@@ -1,5 +1,5 @@
-use std::net::SocketAddr;
 use beppo_fit_backend::app;
+use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
@@ -22,4 +22,3 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
-

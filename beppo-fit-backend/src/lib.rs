@@ -30,11 +30,20 @@ pub async fn app(pool: PgPool) -> Router {
         .route("/auth/register", post(handlers::auth::register))
         .route("/auth/login", post(handlers::auth::login))
         .route("/auth/verify", get(handlers::auth::verify_email))
-        .route("/auth/forgot-password", post(handlers::auth::forgot_password))
+        .route(
+            "/auth/forgot-password",
+            post(handlers::auth::forgot_password),
+        )
         .route("/auth/reset-password", post(handlers::auth::reset_password))
         .route("/auth/google", get(handlers::oauth::google_login))
-        .route("/auth/google/callback", get(handlers::oauth::google_callback))
-        .route("/auth/me", axum::routing::delete(handlers::auth::delete_account))
+        .route(
+            "/auth/google/callback",
+            get(handlers::oauth::google_callback),
+        )
+        .route(
+            "/auth/me",
+            axum::routing::delete(handlers::auth::delete_account),
+        )
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .with_state(state)

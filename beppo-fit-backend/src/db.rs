@@ -2,8 +2,7 @@ use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::env;
 
 pub async fn init_pool() -> PgPool {
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let mut retries = 5;
     let mut pool = None;
@@ -12,14 +11,17 @@ pub async fn init_pool() -> PgPool {
         match PgPoolOptions::new()
             .max_connections(5)
             .connect(&database_url)
-            .await 
+            .await
         {
             Ok(p) => {
                 pool = Some(p);
                 break;
             }
             Err(e) => {
-                tracing::warn!("Failed to connect to database: {:?}. Retrying in 2 seconds...", e);
+                tracing::warn!(
+                    "Failed to connect to database: {:?}. Retrying in 2 seconds...",
+                    e
+                );
                 tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
                 retries -= 1;
             }

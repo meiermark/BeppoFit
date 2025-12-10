@@ -1,8 +1,4 @@
-use lettre::{
-    message::header::ContentType, Message,
-    SmtpTransport, Transport,
-};
-
+use lettre::{message::header::ContentType, Message, SmtpTransport, Transport};
 
 use std::env;
 
@@ -23,9 +19,13 @@ impl EmailService {
 
         // For Mailhog, we don't strictly need auth, but structure is here
         let mailer = SmtpTransport::builder_dangerous(&host).port(port).build();
-        let frontend_url = env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:80".to_string());
+        let frontend_url =
+            env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:80".to_string());
 
-        Self { mailer, frontend_url }
+        Self {
+            mailer,
+            frontend_url,
+        }
     }
 
     pub fn send_verification_email(&self, to_email: &str, token: &str) -> Result<(), AppError> {
@@ -51,18 +51,18 @@ impl EmailService {
     fn send_email(&self, to: &str, subject: &str, body: &str) -> Result<(), AppError> {
         let email = Message::builder()
             .from("BeppoFit <noreply@beppofit.com>".parse().unwrap())
-            .to(to.parse().map_err(|_| AppError::BadRequest("Invalid email address".into()))?)
+            .to(to
+                .parse()
+                .map_err(|_| AppError::BadRequest("Invalid email address".into()))?)
             .subject(subject)
             .header(ContentType::TEXT_PLAIN)
             .body(String::from(body))
             .map_err(|_e| AppError::InternalServerError)?;
 
-        self.mailer
-            .send(&email)
-            .map_err(|e| {
-                tracing::error!("Failed to send email: {:?}", e);
-                AppError::InternalServerError
-            })?;
+        self.mailer.send(&email).map_err(|e| {
+            tracing::error!("Failed to send email: {:?}", e);
+            AppError::InternalServerError
+        })?;
 
         Ok(())
     }

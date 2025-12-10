@@ -1,5 +1,5 @@
-use sqlx::PgPool;
 use crate::services::email::EmailService;
+use sqlx::PgPool;
 use std::sync::Arc;
 
 #[derive(Clone)]

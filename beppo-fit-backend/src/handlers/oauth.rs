@@ -1,20 +1,15 @@
 use axum::{
     extract::{Query, State},
-    response::{Redirect, IntoResponse},
+    response::{IntoResponse, Redirect},
 };
 use oauth2::{
-    basic::BasicClient, AuthUrl, ClientId, ClientSecret, CsrfToken, RedirectUrl, Scope,
-    TokenUrl, TokenResponse, reqwest::async_http_client,
+    basic::BasicClient, reqwest::async_http_client, AuthUrl, ClientId, ClientSecret, CsrfToken,
+    RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
 use serde::Deserialize;
 use std::env;
 
-use crate::{
-    error::AppError,
-    models::user::User,
-    state::AppState,
-    handlers::auth::generate_token,
-};
+use crate::{error::AppError, handlers::auth::generate_token, models::user::User, state::AppState};
 
 #[derive(Deserialize)]
 pub struct AuthRequest {
@@ -88,7 +83,8 @@ pub async fn google_callback(
 
     let token = generate_token(&user.id.to_string())?;
 
-    let frontend_url = env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:4200".to_string());
+    let frontend_url =
+        env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:4200".to_string());
     let redirect_url = format!("{}/auth/google/callback?token={}", frontend_url, token);
 
     Ok(Redirect::to(&redirect_url))
@@ -104,8 +100,11 @@ fn oauth_client() -> Result<BasicClient, AppError> {
     let token_url = TokenUrl::new("https://oauth2.googleapis.com/token".to_string())
         .map_err(|_| AppError::InternalServerError)?;
 
-    Ok(
-        BasicClient::new(ClientId::new(client_id), Some(ClientSecret::new(client_secret)), auth_url, Some(token_url))
-            .set_redirect_uri(RedirectUrl::new(redirect_url).map_err(|_| AppError::InternalServerError)?)
+    Ok(BasicClient::new(
+        ClientId::new(client_id),
+        Some(ClientSecret::new(client_secret)),
+        auth_url,
+        Some(token_url),
     )
+    .set_redirect_uri(RedirectUrl::new(redirect_url).map_err(|_| AppError::InternalServerError)?))
 }

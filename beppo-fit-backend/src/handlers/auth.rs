@@ -1,23 +1,20 @@
-use axum::{
-    extract::{Query, State},
-    Json,
-};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2, PasswordHash, PasswordVerifier,
 };
-use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-use std::env;
-use validator::Validate;
 use axum::{
-    extract::FromRequestParts,
-    http::request::Parts,
-    http::header::AUTHORIZATION,
-    async_trait,
+    async_trait, extract::FromRequestParts, http::header::AUTHORIZATION, http::request::Parts,
+};
+use axum::{
+    extract::{Query, State},
+    Json,
 };
 use jsonwebtoken::{decode, DecodingKey, Validation};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use serde::{Deserialize, Serialize};
+use std::env;
+use uuid::Uuid;
+use validator::Validate;
 
 use crate::{
     error::AppError,
@@ -58,19 +55,21 @@ where
         let auth_header = parts
             .headers
             .get(AUTHORIZATION)
-            .ok_or(AppError::Unauthorized("Missing Authorization Header".into()))?;
+            .ok_or(AppError::Unauthorized(
+                "Missing Authorization Header".into(),
+            ))?;
 
         let auth_str = auth_header
             .to_str()
             .map_err(|_| AppError::Unauthorized("Invalid Authorization Header".into()))?;
 
         if !auth_str.starts_with("Bearer ") {
-             return Err(AppError::Unauthorized("Invalid Bearer Token".into()));
+            return Err(AppError::Unauthorized("Invalid Bearer Token".into()));
         }
 
         let token = &auth_str[7..];
         let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-        
+
         let token_data = decode::<Claims>(
             token,
             &DecodingKey::from_secret(secret.as_bytes()),
@@ -90,15 +89,18 @@ pub async fn register(
         return Err(AppError::BadRequest(e.to_string()));
     }
 
-    let existing_user = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", payload.email)
-        .fetch_optional(&state.pool)
-        .await?;
+    let existing_user =
+        sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", payload.email)
+            .fetch_optional(&state.pool)
+            .await?;
 
     if let Some(existing) = existing_user {
         if existing.is_verified {
-            return Err(AppError::Conflict("A user with this email address already exists".into()));
+            return Err(AppError::Conflict(
+                "A user with this email address already exists".into(),
+            ));
         } else {
-             // User exists but unverified. Resend token.
+            // User exists but unverified. Resend token.
             let new_token = Uuid::new_v4().to_string();
             let user = sqlx::query_as!(
                 User,
@@ -109,8 +111,11 @@ pub async fn register(
             .fetch_one(&state.pool)
             .await?;
 
-            if let Err(e) = state.email_service.send_verification_email(&user.email, &new_token) {
-                 tracing::error!("Failed to resend verification email: {:?}", e);
+            if let Err(e) = state
+                .email_service
+                .send_verification_email(&user.email, &new_token)
+            {
+                tracing::error!("Failed to resend verification email: {:?}", e);
             }
 
             let token = generate_token(&user.id.to_string())?;
@@ -142,7 +147,10 @@ pub async fn register(
 
     // Send verification email (non-blocking in a real app, but blocking here for simplicity)
     // We log the error but don't fail the registration if email fails (or we could fail it)
-    if let Err(e) = state.email_service.send_verification_email(&user.email, &verification_token) {
+    if let Err(e) = state
+        .email_service
+        .send_verification_email(&user.email, &verification_token)
+    {
         tracing::error!("Failed to send verification email: {:?}", e);
     }
 
@@ -155,14 +163,10 @@ pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<AuthResponse>, AppError> {
-    let user = sqlx::query_as!(
-        User,
-        "SELECT * FROM users WHERE email = $1",
-        payload.email
-    )
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or(AppError::Unauthorized("Unknown e-mail".into()))?;
+    let user = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", payload.email)
+        .fetch_optional(&state.pool)
+        .await?
+        .ok_or(AppError::Unauthorized("Unknown e-mail".into()))?;
 
     let password_hash = user
         .password_hash
@@ -220,9 +224,12 @@ pub async fn forgot_password(
     .await?;
 
     if result.rows_affected() > 0 {
-        if let Err(e) = state.email_service.send_password_reset_email(&payload.email, &token) {
-             tracing::error!("Failed to send reset email: {:?}", e);
-             return Err(AppError::InternalServerError);
+        if let Err(e) = state
+            .email_service
+            .send_password_reset_email(&payload.email, &token)
+        {
+            tracing::error!("Failed to send reset email: {:?}", e);
+            return Err(AppError::InternalServerError);
         }
     }
 
@@ -286,8 +293,9 @@ pub async fn delete_account(
     State(state): State<AppState>,
     claims: Claims,
 ) -> Result<Json<&'static str>, AppError> {
-    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| AppError::Unauthorized("Invalid User ID in token".into()))?;
-    
+    let user_id = Uuid::parse_str(&claims.sub)
+        .map_err(|_| AppError::Unauthorized("Invalid User ID in token".into()))?;
+
     sqlx::query!("DELETE FROM users WHERE id = $1", user_id)
         .execute(&state.pool)
         .await?;

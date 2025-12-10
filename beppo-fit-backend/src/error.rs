@@ -19,7 +19,9 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            AppError::InternalServerError => (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error"),
+            AppError::InternalServerError => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error")
+            }
             AppError::BadRequest(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
             AppError::Unauthorized(ref msg) => (StatusCode::UNAUTHORIZED, msg.as_str()),
             AppError::Conflict(ref msg) => (StatusCode::CONFLICT, msg.as_str()),
@@ -29,7 +31,10 @@ impl IntoResponse for AppError {
             }
             AppError::PasswordHashError(ref e) => {
                 tracing::error!("Password hash error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Password Processing Error")
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Password Processing Error",
+                )
             }
             AppError::JwtError(ref e) => {
                 tracing::error!("JWT error: {:?}", e);
