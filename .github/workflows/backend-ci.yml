@@ -1,0 +1,55 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'beppo-fit-backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'beppo-fit-backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+  WORKDIR: beppo-fit-backend
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy, rustfmt
+        
+    - name: Check Match format
+      run: cargo fmt -- --check
+      working-directory: ${{ env.WORKDIR }}
+      
+    - name: Clippy Linting
+      run: cargo clippy -- -D warnings
+      working-directory: ${{ env.WORKDIR }}
+      
+    - name: Run Tests
+      run: cargo test --verbose
+      working-directory: ${{ env.WORKDIR }}
+      
+    - name: Build
+      run: cargo build --verbose
+      working-directory: ${{ env.WORKDIR }}
+
+  docker_build:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker Image
+      run: docker build . --file Dockerfile --tag beppo-fit-backend:latest
+      working-directory: ${{ env.WORKDIR }}
