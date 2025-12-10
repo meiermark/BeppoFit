@@ -1,0 +1,27 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-title>My Account</ion-title>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="/home"></ion-back-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+            <ion-button (click)="logout()">
+                <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <div class="ion-padding">
+        <h1>Account Settings</h1>
+
+        <div class="danger-zone">
+            <h2 style="color: var(--ion-color-danger);">Danger Zone</h2>
+            <p>Deleting your account is permanent and cannot be undone.</p>
+            <ion-button color="danger" expand="block" (click)="deleteAccount()">
+                Delete Account
+            </ion-button>
+        </div>
+    </div>
+</ion-content>

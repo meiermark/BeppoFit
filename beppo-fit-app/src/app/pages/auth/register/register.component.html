@@ -1,0 +1,44 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>Create Account</ion-title>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="/auth/login"></ion-back-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <ion-item>
+            <ion-label position="floating">Email</ion-label>
+            <ion-input type="email" formControlName="email"></ion-input>
+        </ion-item>
+        <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" class="error">
+            Valid email is required
+        </div>
+
+        <ion-item>
+            <ion-label position="floating">Password</ion-label>
+            <ion-input type="password" formControlName="password"></ion-input>
+        </ion-item>
+        <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid" class="error">
+            Password must be at least 8 characters
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+            {{ errorMessage }}
+        </div>
+
+        <ion-button expand="block" type="submit" [disabled]="!registerForm.valid || isLoading" class="ion-margin-top">
+            {{ isLoading ? 'Creating Account...' : 'Sign Up' }}
+        </ion-button>
+    </form>
+
+    <ion-button expand="block" color="secondary" (click)="googleLogin()" class="ion-margin-top">
+        Sign up with Google
+    </ion-button>
+
+    <div class="ion-text-center ion-margin-top">
+        <a routerLink="/auth/login">Already have an account? Login</a>
+    </div>
+</ion-content>
