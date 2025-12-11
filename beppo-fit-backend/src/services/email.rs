@@ -67,3 +67,22 @@ impl EmailService {
         Ok(())
     }
 }
+
+impl Default for EmailService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_email_service_default() {
+        let service = EmailService::default();
+        // Just verify it doesn't panic and constructs successfully
+        // We can't easily check private fields without accessors, but this ensures Default works.
+        assert!(!service.frontend_url.is_empty()); 
+    }
+}
