@@ -57,6 +57,7 @@ jobs:
       working-directory: ${{ env.WORKDIR }}
       env:
         DATABASE_URL: postgres://user:password@localhost:5432/beppo_fit
+        JWT_SECRET: supersecretjwtkeyforci
       
     - name: Build
       run: cargo build --verbose
