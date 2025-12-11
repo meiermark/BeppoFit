@@ -15,6 +15,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   WORKDIR: beppo-fit-backend
+  SQLX_OFFLINE: true
 
 jobs:
   build_and_test:
