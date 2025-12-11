@@ -83,6 +83,6 @@ mod tests {
         let service = EmailService::default();
         // Just verify it doesn't panic and constructs successfully
         // We can't easily check private fields without accessors, but this ensures Default works.
-        assert!(!service.frontend_url.is_empty()); 
+        assert!(!service.frontend_url.is_empty());
     }
 }
